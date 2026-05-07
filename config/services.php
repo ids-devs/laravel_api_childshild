@@ -4,35 +4,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Third Party Services
+    | ChildShield Climate AI — Third-Party Service Configuration
     |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
     */
 
-    'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
+    // ── Africa's Talking ─────────────────────────────────────────────────────
+    'africastalking' => [
+        'username'  => env('AT_USERNAME', 'sandbox'),
+        'api_key'   => env('AT_API_KEY'),
+        'sender_id' => env('AT_SENDER_ID', 'ChildShield'),
+        'ussd_code' => env('AT_USSD_CODE', '*123#'),
     ],
 
-    'resend' => [
-        'key' => env('RESEND_API_KEY'),
+    // ── WhatsApp ─────────────────────────────────────────────────────────────
+    'whatsapp' => [
+        'driver'      => env('WA_DRIVER', 'baileys'),
+        'baileys_url' => env('WA_BAILEYS_URL', 'http://localhost:3000'),
+        'waba_url'    => env('WA_WABA_URL'),
+        'waba_token'  => env('WA_WABA_TOKEN'),
     ],
 
-    'ses' => [
-        'key' => env('AWS_ACCESS_KEY_ID'),
-        'secret' => env('AWS_SECRET_ACCESS_KEY'),
-        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    // ── OpenWeather ──────────────────────────────────────────────────────────
+    'openweather' => [
+        'key' => env('OPENWEATHER_API_KEY'),
     ],
 
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
-        ],
+    // ── Tomorrow.io ──────────────────────────────────────────────────────────
+    'tomorrow' => [
+        'key' => env('TOMORROW_API_KEY'),
+    ],
+
+    // ── OpenAI ───────────────────────────────────────────────────────────────
+    'openai' => [
+        'key'   => env('OPENAI_API_KEY'),
+        'model' => 'gpt-4o-mini',
     ],
 
 ];

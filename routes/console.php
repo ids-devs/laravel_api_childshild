@@ -14,7 +14,6 @@ use App\Jobs\CalculateRiskScoresJob;
 Schedule::job(new FetchClimateDataJob, 'default')
     ->hourly()
     ->withoutOverlapping()
-    ->runInBackground()
     ->name('fetch-climate-data')
     ->onFailure(fn() => \Illuminate\Support\Facades\Log::error('FetchClimateDataJob scheduled run failed'));
 
@@ -22,7 +21,6 @@ Schedule::job(new FetchClimateDataJob, 'default')
 Schedule::job(new CalculateRiskScoresJob, 'default')
     ->hourlyAt(5)
     ->withoutOverlapping()
-    ->runInBackground()
     ->name('calculate-risk-scores');
 
 // Clean up expired USSD sessions daily

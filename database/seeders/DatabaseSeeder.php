@@ -12,7 +12,9 @@ class DatabaseSeeder extends Seeder
             ProvinceSeeder::class,
             DistrictSeeder::class,
             RiskTypeSeeder::class,
-            OrganizationTypeSeeder::class,
+            RolesPermissionsSeeder::class,
+            LocationsSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }
