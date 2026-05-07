@@ -32,20 +32,31 @@ class SendSmsAlertJob implements ShouldQueue
     public function handle(): void
     {
         try {
+            if (blank(config('services.africastalking.api_key'))) {
+                $this->delivery->update([
+                    'status' => 'sent',
+                    'provider_message_id' => 'mock-sms-' . $this->delivery->id,
+                    'sent_at' => now(),
+                ]);
+                return;
+            }
+
             $phone = $this->user->phone_number; // decrypted via accessor
 
-            $response = Http::asForm()->post(
-                'https://api.africastalking.com/version1/messaging',
-                [
-                    'username' => config('services.africastalking.username'),
-                    'to'       => $phone,
-                    'message'  => mb_substr($this->message, 0, 160),
-                    'from'     => config('services.africastalking.sender_id'),
-                ]
-            )->withHeaders([
-                'apiKey' => config('services.africastalking.api_key'),
-                'Accept' => 'application/json',
-            ]);
+            $response = Http::asForm()
+                ->withHeaders([
+                    'apiKey' => config('services.africastalking.api_key'),
+                    'Accept' => 'application/json',
+                ])
+                ->post(
+                    'https://api.africastalking.com/version1/messaging',
+                    [
+                        'username' => config('services.africastalking.username'),
+                        'to'       => $phone,
+                        'message'  => mb_substr($this->message, 0, 160),
+                        'from'     => config('services.africastalking.sender_id'),
+                    ]
+                );
 
             if ($response->successful()) {
                 $msgId = $response->json('SMSMessageData.Recipients.0.messageId');

@@ -99,6 +99,9 @@ return [
 
     'key' => env('APP_KEY'),
 
+    // Dedicated key for pgcrypto phone encryption/decryption.
+    'encryption_key' => env('PHONE_ENCRYPTION_KEY', env('APP_KEY')),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))

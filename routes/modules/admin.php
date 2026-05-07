@@ -3,8 +3,7 @@
 use App\Http\Controllers\API\V1\AdminController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:api', 'check.active'])->prefix('admin')->name('admin.')
-    ->middleware('role:super-admin|admin')
+Route::middleware(['auth:api', 'check.active', 'role:super-admin|admin,api'])->prefix('admin')->name('admin.')
     ->group(function () {
         Route::get('/users',                [AdminController::class, 'users'])->name('users.index');
         Route::patch('/users/{id}/role',    [AdminController::class, 'updateUserRole'])->name('users.role');

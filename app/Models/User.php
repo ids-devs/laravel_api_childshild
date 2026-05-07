@@ -45,13 +45,13 @@ class User extends Model
 
     public static function encryptPhone(string $phone): string
     {
-        $key = config('app.encryption_key', config('app.key'));
+        $key = config('app.encryption_key') ?: config('app.key');
         return DB::selectOne("SELECT encode(pgp_sym_encrypt(?, ?), 'base64') AS enc", [$phone, $key])->enc;
     }
 
     public static function decryptPhone(string $encrypted): string
     {
-        $key = config('app.encryption_key', config('app.key'));
+        $key = config('app.encryption_key') ?: config('app.key');
         return DB::selectOne("SELECT pgp_sym_decrypt(decode(?, 'base64'), ?) AS dec", [$encrypted, $key])->dec;
     }
 

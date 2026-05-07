@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\OrganizationType;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,7 +27,7 @@ class ClinicUser extends Authenticatable implements JWTSubject
 
     protected $fillable = [
         'name', 'email', 'password',
-        'organization_name', 'organization_type',
+        'organization_name', 'organization_type_id',
         'location_id', 'is_active',
         'last_login_at', 'last_login_ip',
     ];
@@ -62,6 +63,11 @@ class ClinicUser extends Authenticatable implements JWTSubject
         return $this->belongsTo(Location::class);
     }
 
+    public function organizationType(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationType::class);
+    }
+
     public function campaigns(): HasMany
     {
         return $this->hasMany(Campaign::class, 'created_by');
@@ -81,7 +87,7 @@ class ClinicUser extends Authenticatable implements JWTSubject
 
     public function scopeByOrgType($query, string $type)
     {
-        return $query->where('organization_type', $type);
+        return $query->whereHas('organizationType', fn ($q) => $q->where('code', $type));
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────
@@ -94,5 +100,39 @@ class ClinicUser extends Authenticatable implements JWTSubject
     public function canAccessAllZones(): bool
     {
         return in_array($this->organization_type, ['government', 'unicef', 'admin']);
+    }
+
+    /**
+     * Backward-compatible virtual attribute mapped to organization_types.code.
+     */
+    public function getOrganizationTypeAttribute(): ?string
+    {
+        if ($this->relationLoaded('organizationType')) {
+            return $this->organizationType?->code;
+        }
+
+        if (! $this->organization_type_id) {
+            return null;
+        }
+
+        return $this->organizationType()->value('code');
+    }
+
+    /**
+     * Allow assigning organization_type string while persisting organization_type_id.
+     */
+    public function setOrganizationTypeAttribute(?string $value): void
+    {
+        if (! $value) {
+            $this->attributes['organization_type_id'] = null;
+
+            return;
+        }
+
+        $id = OrganizationType::query()->where('code', $value)->value('id');
+
+        if ($id) {
+            $this->attributes['organization_type_id'] = $id;
+        }
     }
 }

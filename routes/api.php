@@ -25,5 +25,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     require base_path('routes/modules/campaigns.php');
     require base_path('routes/modules/dashboard.php');
     require base_path('routes/modules/symptoms.php');
+    require base_path('routes/modules/families.php');
+    require base_path('routes/modules/reports.php');
     require base_path('routes/modules/admin.php');
 });

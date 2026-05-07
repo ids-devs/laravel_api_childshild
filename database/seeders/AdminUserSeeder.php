@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ClinicUser;
+use App\Models\OrganizationType;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,6 +15,9 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
+        $orgTypeIds = OrganizationType::query()
+            ->pluck('id', 'code');
+
         // ─── Super Admin ────────────────────────────────────────────────
         $superAdmin = ClinicUser::firstOrCreate(
             ['email' => env('ADMIN_EMAIL', 'admin@childshield.mz')],
@@ -21,7 +25,7 @@ class AdminUserSeeder extends Seeder
                 'name'              => 'ChildShield Admin',
                 'password'          => Hash::make(env('ADMIN_PASSWORD', 'ChildShield@2025!')),
                 'organization_name' => 'ChildShield Climate AI',
-                'organization_type' => 'admin',
+                'organization_type_id' => $orgTypeIds['admin'] ?? null,
                 'is_active'         => true,
                 'email_verified_at' => now(),
             ]
@@ -35,7 +39,7 @@ class AdminUserSeeder extends Seeder
                 'name'              => 'Centro de Saúde KaMpfumo',
                 'password'          => Hash::make('Clinica@2025!'),
                 'organization_name' => 'CS KaMpfumo',
-                'organization_type' => 'clinic',
+                'organization_type_id' => $orgTypeIds['clinic'] ?? null,
                 'location_id'       => \App\Models\Location::query()
                     ->whereHas('district', fn($q) => $q->where('name', 'KaMpfumo'))
                     ->value('id'),
@@ -52,7 +56,7 @@ class AdminUserSeeder extends Seeder
                 'name'              => 'ONG Saúde Gaza',
                 'password'          => Hash::make('Ong@2025!'),
                 'organization_name' => 'Saúde para Todos',
-                'organization_type' => 'ong',
+                'organization_type_id' => $orgTypeIds['ong'] ?? null,
                 'location_id'       => \App\Models\Location::query()
                     ->whereHas('district', fn($q) => $q->where('name', 'Xai-Xai'))
                     ->value('id'),
@@ -69,7 +73,7 @@ class AdminUserSeeder extends Seeder
                 'name'              => 'MISAU - Direcção Nacional',
                 'password'          => Hash::make('Misau@2025!'),
                 'organization_name' => 'MISAU',
-                'organization_type' => 'government',
+                'organization_type_id' => $orgTypeIds['government'] ?? null,
                 'is_active'         => true,
                 'email_verified_at' => now(),
             ]

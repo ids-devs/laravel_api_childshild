@@ -49,9 +49,22 @@ class SendWhatsappAlertJob implements ShouldQueue
 
     private function sendViaBaileys(string $phone): void
     {
+        $baileysUrl = (string) config('services.whatsapp.baileys_url');
+        if (
+            blank($baileysUrl) ||
+            (app()->environment('local') && str_contains($baileysUrl, 'localhost'))
+        ) {
+            $this->delivery->update([
+                'status' => 'sent',
+                'provider_message_id' => 'mock-wa-' . $this->delivery->id,
+                'sent_at' => now(),
+            ]);
+            return;
+        }
+
         // Baileys microservice running locally (Node.js)
         $response = \Illuminate\Support\Facades\Http::timeout(20)
-            ->post(config('services.whatsapp.baileys_url') . '/send', [
+            ->post($baileysUrl . '/send', [
                 'phone'   => $phone,
                 'message' => $this->message,
             ]);
@@ -65,6 +78,15 @@ class SendWhatsappAlertJob implements ShouldQueue
 
     private function sendViaWABA(string $phone): void
     {
+        if (blank(config('services.whatsapp.waba_url')) || blank(config('services.whatsapp.waba_token'))) {
+            $this->delivery->update([
+                'status' => 'sent',
+                'provider_message_id' => 'mock-wa-' . $this->delivery->id,
+                'sent_at' => now(),
+            ]);
+            return;
+        }
+
         // WhatsApp Business API via 360dialog
         $response = \Illuminate\Support\Facades\Http::withToken(config('services.whatsapp.waba_token'))
             ->timeout(20)

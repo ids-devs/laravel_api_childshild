@@ -20,13 +20,18 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        DB::statement('ALTER TABLE health_facilities ADD COLUMN IF NOT EXISTS geom geometry(Point, 4326)');
-        DB::statement('CREATE INDEX IF NOT EXISTS health_facilities_geom_idx ON health_facilities USING GIST(geom)');
-        DB::statement("
-            CREATE TRIGGER trg_sync_facility_geom
-            BEFORE INSERT OR UPDATE ON health_facilities
-            FOR EACH ROW EXECUTE FUNCTION sync_location_geom();
-        ");
+        $hasGeometryType = DB::table('pg_type')->where('typname', 'geometry')->exists();
+
+        if ($hasGeometryType) {
+            DB::statement('ALTER TABLE health_facilities ADD COLUMN IF NOT EXISTS geom geometry(Point, 4326)');
+            DB::statement('CREATE INDEX IF NOT EXISTS health_facilities_geom_idx ON health_facilities USING GIST(geom)');
+            DB::statement('DROP TRIGGER IF EXISTS trg_sync_facility_geom ON health_facilities');
+            DB::statement("
+                CREATE TRIGGER trg_sync_facility_geom
+                BEFORE INSERT OR UPDATE ON health_facilities
+                FOR EACH ROW EXECUTE FUNCTION sync_location_geom();
+            ");
+        }
     }
     public function down(): void
     {

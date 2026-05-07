@@ -8,7 +8,7 @@ return new class extends Migration {
     {
         Schema::create('alert_deliveries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('alert_id')->constrained('alerts')->cascadeOnDelete();
+            $table->foreignId('alert_id')->nullable()->constrained('alerts')->nullOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->enum('channel', ['sms', 'whatsapp']);
             $table->enum('status', ['queued', 'sent', 'delivered', 'failed'])->default('queued');

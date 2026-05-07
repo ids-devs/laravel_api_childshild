@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Schedule;
 use App\Jobs\FetchClimateDataJob;
 use App\Jobs\CalculateRiskScoresJob;
+use App\Models\Alert;
+use App\Models\UssdSession;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,13 +26,31 @@ Schedule::job(new CalculateRiskScoresJob, 'default')
     ->withoutOverlapping()
     ->name('calculate-risk-scores');
 
-// Clean up expired USSD sessions daily
-Schedule::command('ussd:cleanup-sessions')
+// Clean up stale USSD sessions daily
+Schedule::call(function (): void {
+    $deleted = UssdSession::query()
+        ->where('is_active', false)
+        ->orWhere('updated_at', '<', now()->subHours(12))
+        ->delete();
+
+    Log::info('[Scheduler] USSD sessions cleanup finished', ['deleted' => $deleted]);
+})
     ->daily()
     ->name('cleanup-ussd-sessions');
 
-// Generate daily summary report (optional)
-Schedule::command('reports:daily-summary')
+// Generate daily summary report snapshot in logs (optional)
+Schedule::call(function (): void {
+    $summary = [
+        'alerts_created_24h' => Alert::query()->where('created_at', '>=', now()->subDay())->count(),
+        'alerts_sent_24h' => Alert::query()
+            ->where('created_at', '>=', now()->subDay())
+            ->where('status', 'sent')
+            ->count(),
+        'active_ussd_sessions' => UssdSession::query()->where('is_active', true)->count(),
+    ];
+
+    Log::info('[Scheduler] Daily summary', $summary);
+})
     ->dailyAt('07:00')
     ->timezone('Africa/Maputo')
     ->name('daily-summary-report');

@@ -71,7 +71,7 @@ class ClimateDataController extends BaseController
      */
     public function refresh(int $locationId): JsonResponse
     {
-        $this->authorize('manage-climate-data');
+        abort_unless(request()->user()?->can('manage-climate-data'), 403, 'Not authorized to manage climate data');
 
         $location = Location::findOrFail($locationId);
         $data     = $this->climateService->fetchForLocation($location);

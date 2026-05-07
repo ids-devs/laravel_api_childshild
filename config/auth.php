@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\ClinicUser;
 
 return [
 
@@ -42,6 +43,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'api' => [
+            'driver' => 'jwt',
+            'provider' => 'clinic_users',
+        ],
     ],
 
     /*
@@ -65,6 +70,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+        'clinic_users' => [
+            'driver' => 'eloquent',
+            'model' => ClinicUser::class,
         ],
 
         // 'users' => [

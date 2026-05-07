@@ -98,7 +98,7 @@ class RiskScoreController extends BaseController
      */
     public function recalculate(int $locationId): JsonResponse
     {
-        $this->authorize('manage-risk-engine');
+        abort_unless(request()->user()?->can('manage-risk-engine'), 403, 'Not authorized to manage risk engine');
 
         $location = Location::findOrFail($locationId);
         $scores   = $this->engine->calculateForLocation($location);
