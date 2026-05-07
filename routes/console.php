@@ -1,8 +1,37 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+use App\Jobs\FetchClimateDataJob;
+use App\Jobs\CalculateRiskScoresJob;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+|--------------------------------------------------------------------------
+| ChildShield Climate AI — Scheduled Tasks
+|--------------------------------------------------------------------------
+*/
+
+// Fetch climate data every hour (e.g. :00 minutes)
+Schedule::job(new FetchClimateDataJob, 'default')
+    ->hourly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('fetch-climate-data')
+    ->onFailure(fn() => \Illuminate\Support\Facades\Log::error('FetchClimateDataJob scheduled run failed'));
+
+// Calculate risk scores every hour, 5 minutes after climate fetch
+Schedule::job(new CalculateRiskScoresJob, 'default')
+    ->hourlyAt(5)
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->name('calculate-risk-scores');
+
+// Clean up expired USSD sessions daily
+Schedule::command('ussd:cleanup-sessions')
+    ->daily()
+    ->name('cleanup-ussd-sessions');
+
+// Generate daily summary report (optional)
+Schedule::command('reports:daily-summary')
+    ->dailyAt('07:00')
+    ->timezone('Africa/Maputo')
+    ->name('daily-summary-report');
